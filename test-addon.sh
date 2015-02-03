@@ -4,7 +4,17 @@
 
 repo=$1
 
+if [ -z $repo ]; then
+  echo -e "usage: ./test-addon.sh user/repo user/ember-cli#branch"
+  exit 2
+fi
+
 addon=`echo $repo | awk '{ split($0, a, "/"); print a[2] }'`
+
+if [ -z $addon ]; then
+  echo -e "error: $repo does not look like a valid repo"
+  exit 2
+fi
 
 if [ $2 ]; then
   branch=$2
@@ -24,6 +34,12 @@ rm -rf $addon
 
 echo -e "Cloning...${reset}"
 git clone git@github.com:$repo > /dev/null 2>&1
+
+if [ "$?" -ne "0" ]; then
+  echo -e "error: could not clone $repo"
+  exit 2
+fi
+
 cd $addon
 
 echo -e "Installing $branch..."
@@ -40,6 +56,7 @@ npm test
 result=$?
 
 echo -e "Removing $addon/...${reset}"
+cd ..
 rm -rf $addon
 
 if [ "$result" -eq "0" ]; then
