@@ -19,7 +19,7 @@ fi
 if [ $2 ]; then
   branch=$2
 else
-  branch="ember-cli/master"
+  branch="local"
 fi
 
  reset="\033[0m"
@@ -42,8 +42,16 @@ fi
 
 cd $addon
 
-echo -e "Installing $branch..."
-npm i --save-dev $branch > /dev/null 2>&1
+if [ "$branch" = "local" ]; then
+  echo -e "Linking local ember-cli"
+  npm link ember-cli > /dev/null 2>&1
+  version=`ember version | head -1 | awk '{split($2,a,"-"); print a[1]}'`
+  mv package.json package.json.old
+  sed "s/\"ember-cli\": \".*\"/\"ember-cli\": \"$version\"/g" < package.json.old > package.json
+else
+  echo -e "Installing $branch..."
+  npm i --save-dev $branch > /dev/null 2>&1
+fi
 
 echo -e "Installing NPM dependencies..."
 npm i > /dev/null 2>&1
